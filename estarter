@@ -1,0 +1,4 @@
+
+java mcgui.Main MyCaster 0 localhostsetup &
+java mcgui.Main MyCaster 1 localhostsetup &
+java mcgui.Main MyCaster 2 localhostsetup &
