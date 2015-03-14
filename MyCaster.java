@@ -8,6 +8,7 @@ import mcgui.*;
 public class MyCaster extends Multicaster {
 	private int seq;
 	private ArrayList<MyMessage> delivered;
+    private ArrayList<MyMessage> notDelivered;
 	private ArrayList<MyMessage> messageBag;
 	private int[] next;
 	private boolean isSequencer;
@@ -46,8 +47,9 @@ public class MyCaster extends Multicaster {
 
 		// seq++;
 		// mcui.debug("Sequence number: \"" + seq + "\"");
-		bcom.basicsend(sequencerId, new MyMessage(id, id, messageText, seq,
-				MyMessage.TOSEQ));
+        MyMessage message = new MyMessage(id, id, messageText, seq, MyMessage.TOSEQ);
+		bcom.basicsend(sequencerId, message);
+        notDelivered.add(message);
 
 	}
 
@@ -91,6 +93,7 @@ public class MyCaster extends Multicaster {
 			// FIFO
 			f_deliver(message.getSender(), message);
 			delivered.add((MyMessage) message);
+
 		} 
 	}
 
@@ -105,7 +108,8 @@ public class MyCaster extends Multicaster {
 			 * " seq: " + m.getSeq() + " text: " + m.getText());
 			 */
 			if (m.getSender() == sender && m.getSeq() == next[sender]) {
-				mcui.deliver(((MyMessage) message).getOrigSender(),
+                notDelivered.remove(message);
+                mcui.deliver(((MyMessage) message).getOrigSender(),
 						((MyMessage) message).getText());
 				next[sender]++;
 				messageBag.remove(m);
@@ -133,11 +137,17 @@ public class MyCaster extends Multicaster {
 		// elects the new sequencer, which will be the node with the lowest id
 		// still active.
 		for (int i = 0; i < hosts; i++) {
-			if (activeHosts[i] == true) {
-				sequencerId = i;
-				break;
-			}
-		}
+            if (activeHosts[i]) {
+                sequencerId = i;
+                break;
+            }
+        }
+        //sends out all messages that has not yet been delivered to the new
+        //sequencer.
+        for (int i = 0; i < notDelivered.size(); i++) {
+            bcom.basicsend(sequencerId, notDelivered.get(i));
+        }
+
 		if (id == sequencerId) {
 			isSequencer = true;
 		}
