@@ -2,9 +2,8 @@ import java.util.ArrayList;
 import mcgui.*;
 
 /**
- * Simple example of how to use the Multicaster interface.
  *
- * @author Andreas Larsson &lt;larandr@chalmers.se&gt;
+ * @author Tobias Boström
  */
 public class MyCaster extends Multicaster {
 	private int seq;
