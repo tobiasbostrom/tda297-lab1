@@ -19,7 +19,7 @@ public class MyCaster extends Multicaster {
 	 */
 
 	public void init() {
-		mcui.debug("The network has " + hosts + " hosts!");
+		mcui.debug("The network has " + hosts + " hosts!"); //test commit
 		seq = 0;
 		sequencerId = 0;
 		delivered = new ArrayList<MyMessage>();
