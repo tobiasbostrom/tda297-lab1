@@ -24,6 +24,7 @@ public class MyCaster extends Multicaster {
 		seq = 0;
 		sequencerId = 0;
 		delivered = new ArrayList<MyMessage>();
+        notDelivered = new ArrayList<MyMessage>();
 		messageBag = new ArrayList<MyMessage>();
 		activeHosts = new boolean[hosts];
 		next = new int[hosts];
@@ -47,9 +48,9 @@ public class MyCaster extends Multicaster {
 
 		// seq++;
 		// mcui.debug("Sequence number: \"" + seq + "\"");
-        MyMessage message = new MyMessage(id, id, messageText, seq, MyMessage.TOSEQ);
-		bcom.basicsend(sequencerId, message);
+        MyMessage message = new MyMessage(id, messageText, seq, MyMessage.TOSEQ);
         notDelivered.add(message);
+        bcom.basicsend(sequencerId, message);
 
 	}
 
@@ -57,8 +58,7 @@ public class MyCaster extends Multicaster {
 		if (isSequencer) {
 			if (((MyMessage) message).getMessageType() == MyMessage.TOSEQ) {
 				// mcui.debug("broadcasts out the message it received from a node");
-				r_broadcast(((MyMessage) message).getText(),
-						((MyMessage) message).getSender());
+				r_broadcast(message);
 			} else {
 				// mcui.debug("tries to deliver message from itself");
 				r_deliver(peer, message);
@@ -68,15 +68,13 @@ public class MyCaster extends Multicaster {
 			// mcui.debug("A non sequencer node receives a message, tries to deliver it");
 			r_deliver(peer, message);
 		}
-
 	}
 
-	public void r_broadcast(String messageText, int source) {
+	public void r_broadcast(Message message) {
 		seq++;
 		// mcui.debug("Sequence number: \"" + seq + "\"");
 		for (int i = 0; i < hosts; i++) {
-			bcom.basicsend(i, new MyMessage(id, source, messageText, seq,
-					MyMessage.FROMSEQ));
+            bcom.basicsend(i, new MyMessage((MyMessage)message, id, seq, MyMessage.FROMSEQ));
 		}
 		// mcui.debug("Sent out: \"" + messageText + "\"");
 	}
@@ -108,11 +106,15 @@ public class MyCaster extends Multicaster {
 			 * " seq: " + m.getSeq() + " text: " + m.getText());
 			 */
 			if (m.getSender() == sender && m.getSeq() == next[sender]) {
-                notDelivered.remove(message);
-                mcui.deliver(((MyMessage) message).getOrigSender(),
-						((MyMessage) message).getText());
+
+                mcui.deliver(((MyMessage) m).getOrigSender(),
+						((MyMessage) m).getText());
 				next[sender]++;
-				messageBag.remove(m);
+                m.revert();
+                //m.setSender(m.getOrigSender());
+                //m.setSeq(m.getOrigSeq());
+                notDelivered.remove(m);
+                messageBag.remove(m);
 			}
 		}
 

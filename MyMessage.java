@@ -10,18 +10,33 @@ public class MyMessage extends Message {
 
 	private String text;
 	private int seq;
+    private int origSeq;
 	public static int TOSEQ = 0;
 	public static int FROMSEQ = 1;
 	private int messageType;
 	private int origSender;
 
-	public MyMessage(int sender, int origSender, String text, int seq, int messageType) {
+	public MyMessage(int sender, String text, int seq, int messageType) {
 		super(sender);
+        this.origSender = sender;
 		this.text = text;
 		this.seq = seq;
 		this.messageType = messageType;
-		this.origSender = origSender;
 	}
+    public MyMessage(MyMessage message, int sender, int seq , int messageType) {
+        super(sender);
+        this.text = message.getText();
+        this.seq = seq;
+        this.origSender = message.getSender();
+        this.origSeq = message.getSeq();
+        this.messageType = messageType;
+
+    }
+    //transform message to original message
+    public void revert() {
+        this.setSender(origSender);
+        this.setSeq(origSeq);
+    }
     
     /**
      * Returns the text of the message only. The toString method can
@@ -43,6 +58,13 @@ public class MyMessage extends Message {
 	public void setSeq(int seq) {
 		this.seq = seq;
 	}
+    public void setSender(int sender) {
+        this.sender = sender;
+    }
+
+    public int getOrigSeq() {
+        return origSeq;
+    }
 
 	@Override
 	public int hashCode() {
