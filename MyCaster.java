@@ -136,19 +136,22 @@ public class MyCaster extends Multicaster {
 	 */
 	public void basicpeerdown(int peer) {
 		activeHosts[peer] = false;
-		// elects the new sequencer, which will be the node with the lowest id
-		// still active.
-		for (int i = 0; i < hosts; i++) {
-            if (activeHosts[i]) {
-                sequencerId = i;
-                break;
-            }
+
+    if(sequencerId == peer) {
+      // elects the new sequencer, which will be the node with the lowest id
+      // still active.
+      for (int i = 0; i < hosts; i++) {
+        if (activeHosts[i]) {
+          sequencerId = i;
+          break;
         }
+      }
         //sends out all messages that has not yet been delivered to the new
         //sequencer.
-        for (int i = 0; i < notDelivered.size(); i++) {
-            bcom.basicsend(sequencerId, notDelivered.get(i));
-        }
+      for (int i = 0; i < notDelivered.size(); i++) {
+        bcom.basicsend(sequencerId, notDelivered.get(i));
+      }
+    }
 
 		if (id == sequencerId) {
 			isSequencer = true;
